@@ -276,3 +276,11 @@ own computer without needing to download `slides` and the presentation file.
 
 ### Development
 See the [development documentation](./docs/development)
+
+---
+
+## Fork Maintainer
+
+This fork is maintained by **[KCCS](https://kccsonline.com)** with custom web UI enhancements and monitoring integrations.
+
+*[kccsonline.com](https://kccsonline.com)*

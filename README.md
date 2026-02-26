@@ -1,3 +1,184 @@
+# Slides Web — Enhanced by KCCS
+
+> Web presentation mode for Markdown slides — write in Markdown, present in the browser with keyboard navigation, speaker notes, and PDF export.
+
+![Presentation View](slides_web/docs/screenshots/presentation.png)
+
+## What's New in This Fork
+
+- **Browser-based slide viewer** — present Markdown slides in any browser, no terminal needed
+- **Speaker notes** — add `<!-- notes: ... -->` to any slide, toggle with `N`
+- **Slide thumbnails** — sidebar with quick-jump navigation
+- **Paste mode** — paste Markdown directly into the browser
+- **PDF export** — print-optimized styles via Ctrl+P
+- **WebSocket sync** — multiple browser windows stay in sync
+- **Code highlighting** — syntax-colored code blocks via Pygments
+- **Fullscreen mode** — press `F` for distraction-free presenting
+- **Touch support** — swipe left/right on mobile devices
+- **Dark theme** — elegant dark (#0d1117) with crisp typography
+- **Zero frontend dependencies** — single HTML file, no npm, no build step
+
+## Quick Start
+
+```bash
+# Install dependencies
+pip install fastapi uvicorn markdown pygments python-multipart
+
+# Run the server
+python -m uvicorn slides_web.app:app --host 127.0.0.1 --port 8509
+
+# Open in browser
+# http://localhost:8509
+```
+
+A demo presentation loads automatically. Paste your own Markdown or use the API.
+
+## Screenshots
+
+| Screenshot | Description |
+|---|---|
+| ![Presentation](slides_web/docs/screenshots/presentation.png) | Main presentation view with dark theme, progress bar, and slide counter |
+
+## Features
+
+- **Markdown-powered** — write slides in plain Markdown, separated by `---`
+- **Dark mode** — elegant dark theme (#0d1117) with crisp typography
+- **Keyboard navigation** — arrow keys, space, enter, backspace
+- **Speaker notes** — add `<!-- notes: your notes here -->` to any slide
+- **Slide thumbnails** — sidebar with quick-jump navigation
+- **Progress bar** — thin accent bar at the top showing position
+- **Slide counter** — current/total in the bottom corner
+- **Paste mode** — paste Markdown directly into the browser
+- **PDF export** — print-optimized styles via Ctrl+P
+- **WebSocket sync** — multiple browser windows stay in sync
+- **Responsive** — works on desktop, tablet, and mobile (swipe support)
+- **Code highlighting** — syntax-colored code blocks via Pygments
+- **Frontmatter** — set title and author in YAML frontmatter
+- **Touch support** — swipe left/right on mobile devices
+- **Fullscreen** — press F for distraction-free presenting
+- **Zero dependencies on the frontend** — single HTML file, no npm, no build step
+
+### Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `->` / `Space` / `Enter` | Next slide |
+| `<-` / `Backspace` | Previous slide |
+| `Home` | First slide |
+| `End` | Last slide |
+| `S` | Toggle slide thumbnails sidebar |
+| `N` | Toggle speaker notes panel |
+| `E` | Open Markdown paste editor |
+| `P` | Print / Export PDF |
+| `F` | Toggle fullscreen |
+| `?` | Show help overlay |
+
+## API Reference
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/` | Web presentation UI |
+| `GET` | `/api/slides` | Get parsed slides as JSON |
+| `POST` | `/api/load` | Load new Markdown content |
+| `GET` | `/api/export/pdf` | PDF export info |
+| `WS` | `/ws` | WebSocket for view sync |
+
+### Load Markdown via API
+
+```bash
+curl -X POST http://localhost:8509/api/load \
+  -H "Content-Type: application/json" \
+  -d '{"content": "# Slide 1\n\nHello\n\n---\n\n# Slide 2\n\nWorld"}'
+```
+
+### Get Slides as JSON
+
+```bash
+curl http://localhost:8509/api/slides | python -m json.tool
+```
+
+## Markdown Format
+
+Slides are separated by `---` on its own line:
+
+```markdown
+---
+title: My Presentation
+author: Your Name
+---
+
+# First Slide
+
+Content here.
+
+---
+
+## Second Slide
+
+- Bullet points
+- **Bold text**
+- `code`
+
+<!-- notes: Speaker notes go here -->
+
+---
+
+## Code Example
+
+```python
+def hello():
+    print("Hello, world!")
+```
+```
+
+### Speaker Notes
+
+Add notes with an HTML comment anywhere in the slide:
+
+```markdown
+## My Slide
+
+Content visible to audience.
+
+<!-- notes: These notes are only visible when you press N. -->
+```
+
+## Docker
+
+```dockerfile
+FROM python:3.12-slim
+WORKDIR /app
+COPY slides_web/ slides_web/
+RUN pip install --no-cache-dir fastapi uvicorn markdown pygments python-multipart
+EXPOSE 8509
+CMD ["uvicorn", "slides_web.app:app", "--host", "0.0.0.0", "--port", "8509"]
+```
+
+```bash
+docker build -t slides-web .
+docker run -p 8509:8509 slides-web
+```
+
+## Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `HOST` | `127.0.0.1` | Server bind address |
+| `PORT` | `8509` | Server port |
+
+## Tech Stack
+
+- **Backend:** FastAPI + Uvicorn
+- **Markdown:** Python-Markdown with fenced_code, codehilite, tables
+- **Syntax Highlighting:** Pygments (Monokai theme)
+- **Frontend:** Vanilla JS, single HTML file, zero build tools
+- **Real-time:** WebSocket for multi-window sync
+
+---
+
+<details>
+<summary>Original Project README</summary>
+
 # Slides
 
 Slides in your terminal.
@@ -78,34 +259,6 @@ func main() {
 
 You can execute code inside your slides by pressing `<C-e>`,
 the output of your command will be displayed at the end of the current slide.
-
----
-
-## Pre-process slides
-
-You can add a code block with three tildes (`~`) and write a command to run *before* displaying
-the slides, the text inside the code block will be passed as `stdin` to the command
-and the code block will be replaced with the `stdout` of the command.
-
-```
-~~~graph-easy --as=boxart
-[ A ] - to -> [ B ]
-~~~
-```
-
-The above will be pre-processed to look like:
-
-┌───┐  to   ┌───┐
-│ A │ ────> │ B │
-└───┘       └───┘
-
-For security reasons, you must pass a file that has execution permissions
-for the slides to be pre-processed. You can use `chmod` to add these permissions.
-
-```bash
-chmod +x file.md
-```
-
 ````
 
 Checkout the [example slides](https://github.com/maaslalani/slides/tree/main/examples).
@@ -122,90 +275,32 @@ If given a file name, `slides` will automatically look for changes in the file a
 curl http://example.com/slides.md | slides
 ```
 
-Go to the first slide with the following key sequence:
-* <kbd>g</kbd> <kbd>g</kbd>
+### Navigation
 
 Go to the next slide with any of the following key sequences:
-* <kbd>space</kbd>
-* <kbd>right</kbd>
-* <kbd>down</kbd>
-* <kbd>enter</kbd>
-* <kbd>n</kbd>
-* <kbd>j</kbd>
-* <kbd>l</kbd>
-* <kbd>Page Down</kbd>
-* number + any of the above (go forward n slides)
+* <kbd>space</kbd> / <kbd>right</kbd> / <kbd>down</kbd> / <kbd>enter</kbd> / <kbd>n</kbd> / <kbd>j</kbd> / <kbd>l</kbd> / <kbd>Page Down</kbd>
 
 Go to the previous slide with any of the following key sequences:
-* <kbd>left</kbd>
-* <kbd>up</kbd>
-* <kbd>p</kbd>
-* <kbd>h</kbd>
-* <kbd>k</kbd>
-* <kbd>N</kbd>
-* <kbd>Page Up</kbd>
-* number + any of the above (go back n slides)
+* <kbd>left</kbd> / <kbd>up</kbd> / <kbd>p</kbd> / <kbd>h</kbd> / <kbd>k</kbd> / <kbd>N</kbd> / <kbd>Page Up</kbd>
 
-Go to a specific slide with the following key sequence:
+Go to a specific slide: number + <kbd>G</kbd>
 
-* number + <kbd>G</kbd>
+Go to the first slide: <kbd>g</kbd> <kbd>g</kbd>
 
-Go to the last slide with the following key:
-
-* <kbd>G</kbd>
+Go to the last slide: <kbd>G</kbd>
 
 ### Search
 
-To quickly jump to the right slide, you can use the search function.
-
-Press <kbd>/</kbd>, enter your search term and press <kbd>Enter</kbd>  
-(*The search term is interpreted as a regular expression. The `/i` flag causes case-insensitivity.*).
-
+Press <kbd>/</kbd>, enter your search term and press <kbd>Enter</kbd>.
 Press <kbd>ctrl+n</kbd> after a search to go to the next search result.
 
 ### Code Execution
 
-If slides finds a code block on the current slides it can execute the code block and display the result as virtual text
-on the screen.
-
 Press <kbd>ctrl+e</kbd> on a slide with a code block to execute it and display the result.
-
-### Pre-processing
-
-You can add a code block with three tildes (`~`) and write a command to run
-*before* displaying the slides, the text inside the code block will be passed
-as `stdin` to the command and the code block will be replaced with the `stdout`
-of the command. Wrap the pre-processed block in three backticks to keep
-proper formatting and new lines.
-
-````
-```
-~~~graph-easy --as=boxart
-[ A ] - to -> [ B ]
-~~~
-```
-````
-
-The above will be pre-processed to look like:
-
-```
-┌───┐  to   ┌───┐
-│ A │ ────> │ B │
-└───┘       └───┘
-```
-
-For security reasons, you must pass a file that has execution permissions
-for the slides to be pre-processed. You can use `chmod` to add these permissions.
-
-```bash
-chmod +x file.md
-```
 
 ### Configuration
 
 `slides` allows you to customize your presentation's look and feel with metadata at the top of your `slides.md`.
-
-> This section is entirely optional, `slides` will use sensible defaults if this section or any field in the section is omitted.
 
 ```yaml
 ---
@@ -216,58 +311,11 @@ paging: Slide %d / %d
 ---
 ```
 
-* `theme`: Path to `json` file containing a [glamour
-  theme](https://github.com/charmbracelet/glamour/tree/master/styles), can also
-  be a link to a remote `json` file which slides will fetch before presenting.
-* `author`: A `string` to display on the bottom-left corner of the presentation
-  view. Defaults to the OS current user's full name. Can be empty to hide the author.
-* `date`: A `string` that is used to format today's date in the `YYYY-MM-DD` format. If the date is not a valid
-  format, the string will be displayed. Defaults to `YYYY-MM-DD`.
-* `paging`: A `string` that contains 0 or more `%d` directives. The first `%d`
-  will be replaced with the current slide number and the second `%d` will be
-  replaced with the total slides count. Defaults to `Slide %d / %d`.
-  You will need to surround the paging value with quotes if it starts with `%`.
-
-#### Date format
-
-Given the date _January 02, 2006_:
-
-| Value  | Translates to |
-|--------|---------------|
-| `YYYY` | 2006          |
-| `YY`   | 06            |
-| `MMMM` | January       |
-| `MMM`  | Jan           |
-| `MM`   | 01            |
-| `mm`   | 1             |
-| `DD`   | 02            |
-| `dd`   | 2             |
-
 ### SSH
 
-Slides is accessible over `ssh` if hosted on a machine through the `slides
-serve [file]` command.
-
-On a machine, run:
-
-```
-slides serve [file]
-```
-
-Then, on another machine (or same machine), `ssh` into the port specified by
-the `slides serve [file]` command:
-```
-ssh 127.0.0.1 -p 53531
-```
-
-You will be able to access the presentation hosted over SSH! You can use this
-to present with `slides` from a computer that doesn't have `slides` installed,
-but does have `ssh`. Or, let your viewers have access to the slides on their
-own computer without needing to download `slides` and the presentation file.
+Slides is accessible over `ssh` if hosted on a machine through the `slides serve [file]` command.
 
 ### Alternatives
-
-**Credits**: This project was heavily inspired by [`lookatme`](https://github.com/d0c-s4vage/lookatme).
 
 * [`lookatme`](https://github.com/d0c-s4vage/lookatme)
 * [`sli.dev`](https://sli.dev/)
@@ -277,10 +325,8 @@ own computer without needing to download `slides` and the presentation file.
 ### Development
 See the [development documentation](./docs/development)
 
+</details>
+
 ---
 
-## Fork Maintainer
-
-This fork is maintained by **[KCCS](https://kccsonline.com)** with custom web UI enhancements and monitoring integrations.
-
-*[kccsonline.com](https://kccsonline.com)*
+Developed by **[KCCS](https://kccsonline.com)** — [kccsonline.com](https://kccsonline.com)
